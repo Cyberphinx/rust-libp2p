@@ -1,5 +1,6 @@
-use std::error::Error;
+use std::{error::Error, time::Duration};
 
+use libp2p::ping;
 use tracing_subscriber::EnvFilter;
 
 #[async_std::main]
@@ -14,7 +15,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
             libp2p::tcp::Config::default(),
             libp2p::tls::Config::new,
             libp2p::yamux::Config::default,
-        )?;
+        )?
+        .with_behaviour(|_| ping::Behaviour::default())?
+        .with_swarm_config(|cfg| cfg.with_idle_connection_timeout(Duration::from_secs(30)))
+        .build();
 
     Ok(())
 }
