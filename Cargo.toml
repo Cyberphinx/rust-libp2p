@@ -1,0 +1,10 @@
+[package]
+name = "rust-libp2p-tutorial"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-std = { version = "1.12.0", features = ["attributes"] }
+futures = "0.3.30"
+libp2p = { version = "0.53.2", features = ["tcp", "tls", "dns", "async-std", "noise", "yamux", "websocket", "ping", "macros"] }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
