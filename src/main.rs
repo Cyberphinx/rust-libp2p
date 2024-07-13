@@ -1,6 +1,6 @@
+use futures::prelude::*;
+use libp2p::{ping, swarm::SwarmEvent, Multiaddr};
 use std::{error::Error, time::Duration};
-
-use libp2p::ping;
 use tracing_subscriber::EnvFilter;
 
 #[async_std::main]
@@ -20,5 +20,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .with_swarm_config(|cfg| cfg.with_idle_connection_timeout(Duration::from_secs(30)))
         .build();
 
-    Ok(())
+    // Tell the swarm to listen on all interfaces and a random, OS-assigned port
+    swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
+
+    // Dial the peer identified by the multi-address given as the second
+    // command-line argument, if any.
+    if let Some(addr) = std::env::args().nth(1) {
+        let remote: Multiaddr = addr.parse()?;
+        swarm.dial(remote)?;
+        println!("Dialed {addr}")
+    }
+
+    loop {
+        match swarm.select_next_some().await {
+            SwarmEvent::NewListenAddr { address, .. } => println!("Listening on {address:?}"),
+            SwarmEvent::Behaviour(event) => println!("{event:?}"),
+            _ => {}
+        }
+    }
 }
